@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shikimori</string>
+    
+    <!-- Navigation -->
+    <string name="tab_anime">Anime</string>
+    <string name="tab_manga">Manga</string>
+    <string name="tab_discovery">Discovery</string>
+    <string name="tab_settings">Settings</string>
+    
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+    
+    <!-- Settings -->
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="theme_selection">Theme</string>
+</resources> 
