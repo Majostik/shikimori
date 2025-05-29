@@ -1,16 +1,16 @@
 plugins {
-    alias(libs.plugins.shikimori.android.library)
-    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.shikimori.kmp.library)
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines.core)
+        }
+    }
 }
 
 android {
     namespace = "com.shikimori.core"
-}
-
-dependencies {
-    // Core Android
-    implementation(libs.androidx.core.ktx)
-    
-    // Serialization
-    implementation(libs.kotlinx.serialization.json)
 } 

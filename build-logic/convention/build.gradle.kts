@@ -7,22 +7,18 @@ group = "com.shikimori.buildlogic"
 dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.compose.gradlePlugin)
+    implementation("org.jetbrains.compose:compose-gradle-plugin:1.7.0")
 }
 
 gradlePlugin {
     plugins {
-        register("androidApplication") {
-            id = "shikimori.android.application"
-            implementationClass = "AndroidApplicationConventionPlugin"
+        register("kmpLibrary") {
+            id = "shikimori.kmp.library"
+            implementationClass = "KmpLibraryConventionPlugin"
         }
-        register("androidLibrary") {
-            id = "shikimori.android.library"
-            implementationClass = "AndroidLibraryConventionPlugin"
-        }
-        register("compose") {
-            id = "shikimori.compose"
-            implementationClass = "ComposeConventionPlugin"
+        register("kmpCompose") {
+            id = "shikimori.kmp.compose"
+            implementationClass = "KmpComposeConventionPlugin"
         }
     }
 } 

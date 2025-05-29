@@ -14,7 +14,7 @@ import androidx.core.view.WindowCompat
 import com.arkivanov.decompose.defaultComponentContext
 import com.shikimori.navigation.component.AppComponentImpl
 import com.shikimori.navigation.ui.AppContent
-import com.shikimori.ui.theme.ShikimoriTheme
+import com.shikimori.designsystem.ShikimoriTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,63 +1,53 @@
 plugins {
-    alias(libs.plugins.shikimori.android.library)
-    alias(libs.plugins.shikimori.compose)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
+    alias(libs.plugins.shikimori.kmp.library)
+    alias(libs.plugins.shikimori.kmp.compose)
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project(":core"))
+            implementation(project(":common"))
+            implementation(project(":navigation:public"))
+            implementation(project(":network"))
+            implementation(project(":design-system"))
+            
+            // Compose
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            
+            // Image loading
+            implementation(libs.kamel.image)
+            
+            // ViewModel
+            
+            // Network
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            
+            // Coroutines
+            implementation(libs.kotlinx.coroutines.core)
+            
+            // Koin
+            implementation(libs.koin.core)
+        }
+        
+        androidMain.dependencies {
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.lifecycle.runtime.ktx)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.ktor.client.okhttp)
+        }
+        
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+    }
 }
 
 android {
     namespace = "com.shikimori.features.discovery"
 }
-
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
-dependencies {
-    // Core modules
-    implementation(project(":core"))
-    implementation(project(":common"))
-    implementation(project(":navigation:public"))
-    
-    // Core Android
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    
-    // Compose
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    
-    // Coroutines
-    implementation(libs.kotlinx.coroutines.android)
-    
-    // Serialization
-    implementation(libs.kotlinx.serialization.json)
-    
-    // Networking
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.kotlinx.serialization)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging.interceptor)
-    
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-    
-    // Koin
-    implementation(libs.koin.android)
-    implementation(libs.koin.androidx.compose)
-    
-    // Coil
-    implementation(libs.coil.compose)
-    
-    // Debug
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-} 

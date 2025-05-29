@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Shikimori" parent="Theme.AppCompat">
+    <style name="Theme.Shikimori" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">@color/primary_dark</item>
         <item name="android:colorBackground">@color/background_dark</item>
     </style>

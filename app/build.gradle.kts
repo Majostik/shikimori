@@ -1,13 +1,42 @@
 plugins {
-    alias(libs.plugins.shikimori.android.application)
-    alias(libs.plugins.shikimori.compose)
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.shikimori"
+    compileSdk = 34
     
     defaultConfig {
         applicationId = "com.shikimori"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
+    
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+    
+    kotlinOptions {
+        jvmTarget = "21"
+    }
+    
+    buildFeatures {
+        compose = true
     }
 }
 
@@ -15,8 +44,9 @@ dependencies {
     // Navigation module
     implementation(project(":navigation:public"))
     implementation(project(":navigation:impl"))
+    implementation(project(":design-system"))
     
-    // Feature modules (needed for DI configuration)
+    // Feature modules
     implementation(project(":features:home"))
     implementation(project(":features:anime"))
     implementation(project(":features:anime-details"))
@@ -30,6 +60,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     
+    // Material3
+    implementation(libs.material)
+    
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -42,8 +75,8 @@ dependencies {
     implementation(libs.decompose.compose)
     
     // Koin
+    implementation(libs.koin.core)
     implementation(libs.koin.android)
-    implementation(libs.koin.androidx.compose)
     
     // Testing
     testImplementation(libs.junit)
