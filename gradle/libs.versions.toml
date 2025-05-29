@@ -6,6 +6,8 @@ compose-compiler = "1.5.14"
 activity-compose = "1.9.2"
 lifecycle = "2.8.6"
 navigation-compose = "2.8.2"
+decompose = "3.2.0"
+decompose-compose = "3.2.0"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 room = "2.6.1"
@@ -39,6 +41,10 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
+
+# Decompose
+decompose = { group = "com.arkivanov.decompose", name = "decompose", version.ref = "decompose" }
+decompose-compose = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose-compose" }
 
 # Networking
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

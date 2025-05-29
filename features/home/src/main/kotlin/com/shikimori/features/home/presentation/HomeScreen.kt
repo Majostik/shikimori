@@ -16,7 +16,7 @@ import com.shikimori.features.anime.presentation.AnimeScreen
 import com.shikimori.features.manga.presentation.MangaScreen
 import com.shikimori.features.discovery.presentation.DiscoveryScreen
 import com.shikimori.features.settings.presentation.SettingsScreen
-import com.shikimori.navigation.Navigator
+import com.shikimori.navigation.component.HomeComponent
 import org.koin.androidx.compose.koinViewModel
 
 data class TabItem(
@@ -26,7 +26,7 @@ data class TabItem(
 
 @Composable
 fun HomeScreen(
-    navigator: Navigator,
+    component: HomeComponent,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -77,13 +77,13 @@ fun HomeScreen(
                 ) {
                     when (state.selectedTabIndex) {
                         0 -> AnimeScreen(
-                            onAnimeClick = navigator::navigateToAnimeDetails
+                            onAnimeClick = component::onAnimeClicked
                         )
                         1 -> MangaScreen(
-                            onMangaClick = navigator::navigateToMangaDetails
+                            onMangaClick = component::onMangaClicked
                         )
                         2 -> DiscoveryScreen(
-                            onAnimeClick = navigator::navigateToAnimeDetails
+                            onAnimeClick = component::onAnimeClicked
                         )
                         3 -> SettingsScreen()
                     }

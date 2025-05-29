@@ -13,6 +13,7 @@ android {
 
 dependencies {
     // Navigation module
+    implementation(project(":navigation:public"))
     implementation(project(":navigation:impl"))
     
     // Feature modules (needed for DI configuration)
@@ -36,8 +37,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     
-    // Navigation
-    implementation(libs.androidx.navigation.compose)
+    // Decompose
+    implementation(libs.decompose)
+    implementation(libs.decompose.compose)
     
     // Koin
     implementation(libs.koin.android)

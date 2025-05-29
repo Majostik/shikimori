@@ -22,8 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.shikimori.core.domain.model.Manga
 import org.koin.androidx.compose.koinViewModel
-import com.shikimori.navigation.Navigator
-import org.koin.compose.koinInject
+import com.shikimori.navigation.component.MangaDetailsComponent
 
 data class Chapter(
     val number: Int,
@@ -35,14 +34,13 @@ data class Chapter(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MangaDetailsScreen(
-    mangaId: Int,
-    navigator: Navigator,
+    component: MangaDetailsComponent,
     viewModel: MangaDetailsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    LaunchedEffect(mangaId) {
-        viewModel.loadManga(mangaId)
+    LaunchedEffect(component.mangaId) {
+        viewModel.loadManga(component.mangaId)
     }
 
     Column(
@@ -61,7 +59,7 @@ fun MangaDetailsScreen(
                 )
             },
             navigationIcon = {
-                IconButton(onClick = navigator::navigateBack) {
+                IconButton(onClick = component::onBackClicked) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             },
@@ -91,7 +89,7 @@ fun MangaDetailsScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadManga(mangaId) }) {
+                        Button(onClick = { viewModel.loadManga(component.mangaId) }) {
                             Text("Retry")
                         }
                     }

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.shikimori.android.library)
     alias(libs.plugins.shikimori.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -28,10 +29,14 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.material3)
     
-    // Navigation
-    implementation(libs.androidx.navigation.compose)
+    // Decompose
+    implementation(libs.decompose)
+    implementation(libs.decompose.compose)
     
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+    
+    // Serialization
+    implementation(libs.kotlinx.serialization.json)
 } 

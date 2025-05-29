@@ -11,8 +11,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
-import androidx.navigation.compose.rememberNavController
-import com.shikimori.navigation.ShikimoriNavHost
+import com.arkivanov.decompose.defaultComponentContext
+import com.shikimori.navigation.component.AppComponentImpl
+import com.shikimori.navigation.ui.AppContent
 import com.shikimori.ui.theme.ShikimoriTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +23,11 @@ class MainActivity : ComponentActivity() {
         
         // Configure status bar
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        
+        // Create root component
+        val rootComponent = AppComponentImpl(
+            componentContext = defaultComponentContext()
+        )
         
         setContent {
             val darkTheme = isSystemInDarkTheme()
@@ -38,8 +44,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navController = rememberNavController()
-                    ShikimoriNavHost(navController = navController)
+                    AppContent(component = rootComponent)
                 }
             }
         }

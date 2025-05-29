@@ -22,8 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.shikimori.core.domain.model.Anime
 import org.koin.androidx.compose.koinViewModel
-import com.shikimori.navigation.Navigator
-import org.koin.compose.koinInject
+import com.shikimori.navigation.component.AnimeDetailsComponent
 
 data class Episode(
     val number: Int,
@@ -35,14 +34,13 @@ data class Episode(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnimeDetailsScreen(
-    animeId: Int,
-    viewModel: AnimeDetailsViewModel = koinViewModel(),
-    navigator: Navigator = koinInject()
+    component: AnimeDetailsComponent,
+    viewModel: AnimeDetailsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    LaunchedEffect(animeId) {
-        viewModel.loadAnime(animeId)
+    LaunchedEffect(component.animeId) {
+        viewModel.loadAnime(component.animeId)
     }
 
     Column(
@@ -61,7 +59,7 @@ fun AnimeDetailsScreen(
                 )
             },
             navigationIcon = {
-                IconButton(onClick = navigator::navigateBack) {
+                IconButton(onClick = component::onBackClicked) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             },
@@ -91,7 +89,7 @@ fun AnimeDetailsScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadAnime(animeId) }) {
+                        Button(onClick = { viewModel.loadAnime(component.animeId) }) {
                             Text("Retry")
                         }
                     }
@@ -336,7 +334,7 @@ private fun EpisodeItem(
             if (episode.watched) {
                 Icon(
                     Icons.Default.Star,
-                    contentDescription = "Watched",
+                    contentDescription = "Play",
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(16.dp)
                 )

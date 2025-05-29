@@ -9,5 +9,6 @@ android {
 dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.navigation.compose)
-} 
+    implementation(libs.decompose)
+    implementation(libs.decompose.compose)
+}
