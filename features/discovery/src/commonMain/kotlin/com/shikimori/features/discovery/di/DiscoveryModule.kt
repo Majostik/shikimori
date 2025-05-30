@@ -4,6 +4,7 @@ import com.shikimori.features.discovery.data.repository.DiscoveryRepositoryImpl
 import com.shikimori.features.discovery.domain.repository.DiscoveryRepository
 import com.shikimori.features.discovery.domain.usecase.GetTrendingAnimesUseCase
 import com.shikimori.features.discovery.presentation.DiscoveryViewModel
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val discoveryModule = module {
@@ -14,5 +15,5 @@ val discoveryModule = module {
     factory { GetTrendingAnimesUseCase(get()) }
     
     // ViewModel
-    factory { DiscoveryViewModel(get()) }
+    singleOf(::DiscoveryViewModel)
 } 

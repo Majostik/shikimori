@@ -20,5 +20,5 @@ val animeModule = module {
     singleOf(::AnimeRepositoryImpl) bind AnimeRepository::class
     factoryOf(::GetAnimesUseCase)
     factoryOf(::SearchAnimesUseCase)
-    factoryOf(::AnimeViewModel)
+    singleOf(::AnimeViewModel)
 } 

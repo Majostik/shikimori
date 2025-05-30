@@ -1,6 +1,7 @@
 package com.shikimori.features.anime.data.repository
 
 import com.shikimori.core.domain.model.Anime
+import com.shikimori.core.utils.Logger
 import com.shikimori.features.anime.data.remote.AnimeApi
 import com.shikimori.features.anime.domain.repository.AnimeRepository
 
@@ -14,17 +15,17 @@ class AnimeRepositoryImpl(
         search: String?
     ): Result<List<Anime>> {
         return try {
-            println("🚀 AnimeRepository: Запрос аниме - page=$page, limit=$limit, search=$search")
+            Logger.d("AnimeRepository", "🚀 Запрос аниме - page=$page, limit=$limit, search=$search")
             val animes = animeApi.getAnimes(
                 page = page,
                 limit = limit,
                 search = search
             )
-            println("✅ AnimeRepository: Получено ${animes.size} аниме")
+            Logger.d("AnimeRepository", "✅ Получено ${animes.size} аниме")
             Result.success(animes)
         } catch (e: Exception) {
-            println("❌ AnimeRepository: Ошибка при запросе аниме: ${e.message}")
-            println("📋 Детали ошибки: ${e.stackTraceToString()}")
+            Logger.e("AnimeRepository", "❌ Ошибка при запросе аниме: ${e.message}", e)
+            Logger.d("AnimeRepository", "📋 Детали ошибки: ${e.stackTraceToString()}")
             Result.failure(e)
         }
     }

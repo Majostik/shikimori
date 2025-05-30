@@ -1,9 +1,10 @@
 package com.shikimori.features.manga.data.remote
 
 import com.shikimori.core.domain.model.Manga
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 
 class MangaApi(private val httpClient: HttpClient) {
     

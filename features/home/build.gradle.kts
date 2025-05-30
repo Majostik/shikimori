@@ -23,6 +23,9 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             
+            // Decompose Compose extension
+            implementation(libs.decompose.compose)
+            
             // ViewModel
             
             // Coroutines

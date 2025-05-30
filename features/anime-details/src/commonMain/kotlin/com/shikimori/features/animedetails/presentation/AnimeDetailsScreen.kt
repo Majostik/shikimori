@@ -1,15 +1,43 @@
 package com.shikimori.features.animedetails.presentation
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,20 +46,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shikimori.core.domain.model.Anime
+import com.shikimori.core.domain.model.fullPreview
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import com.shikimori.core.domain.model.Anime
 import com.shikimori.common.di.koinInject
 import com.shikimori.navigation.component.AnimeDetailsComponent
 
-data class Episode(
-    val number: Int,
-    val name: String,
-    val airDate: String,
-    val watched: Boolean = false
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AnimeDetailsScreen(
     component: AnimeDetailsComponent,
@@ -73,9 +95,12 @@ fun AnimeDetailsScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             when (val state = uiState) {
                 is AnimeDetailsUiState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
                 
                 is AnimeDetailsUiState.Error -> {
@@ -103,125 +128,117 @@ fun AnimeDetailsScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AnimeDetailsContent(anime: Anime) {
-    val episodes = remember(anime.episodes) {
-        (1..anime.episodes).map { episodeNumber ->
-            Episode(
-                number = episodeNumber,
-                name = "Episode $episodeNumber",
-                airDate = "2023-${(episodeNumber % 12) + 1}-${(episodeNumber % 28) + 1}",
-                watched = episodeNumber <= 10 // Первые 10 эпизодов "просмотрены"
-            )
-        }
-    }
+    val scrollState = rememberScrollState()
+    var isDescriptionExpanded by remember { mutableStateOf(false) }
     
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header with poster and info
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Poster
+            KamelImage(
+                resource = asyncPainterResource(anime.image.fullPreview()),
+                contentDescription = anime.name,
+                modifier = Modifier
+                    .width(140.dp)
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
+            
+            // Info
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Poster
-                KamelImage(
-                    resource = asyncPainterResource(anime.image.preview),
-                    contentDescription = anime.name,
-                    modifier = Modifier
-                        .width(120.dp)
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
+                Text(
+                    text = anime.russian ?: anime.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
                 
-                // Info
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                if (anime.russian != null && anime.name != anime.russian) {
                     Text(
-                        text = anime.russian ?: anime.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    if (anime.russian != null && anime.name != anime.russian) {
-                        Text(
-                            text = anime.name,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    
-                    // Rating
-                    if (!anime.score.isNullOrBlank()) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Star,
-                                contentDescription = "Rating",
-                                tint = Color(0xFFFFD700),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = anime.score ?: "",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    
-                    // Episodes info
-                    Text(
-                        text = "${anime.episodesAired}/${anime.episodes} episodes",
+                        text = anime.name,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
-                    // Status
-                    Text(
-                        text = anime.status?.replaceFirstChar { char -> 
-                            if (char.isLowerCase()) char.titlecase() else char.toString() 
-                        } ?: "Unknown",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 }
+                
+                // Rating
+                if (!anime.score.isNullOrBlank()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = "Rating",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = anime.score ?: "",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                
+                // Episodes info
+                Text(
+                    text = "${anime.episodesAired}/${anime.episodes} episodes",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                // Status
+                Text(
+                    text = anime.status?.replaceFirstChar { char -> 
+                        if (char.isLowerCase()) char.titlecase() else char.toString() 
+                    } ?: "Unknown",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
         
         // Genres
         if (anime.genres.isNotEmpty()) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
+                    Text(
+                        text = "Genres",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "Genres",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            anime.genres.forEach { genre ->
-                                AssistChip(
-                                    onClick = { },
-                                    label = { Text(genre.russian) }
-                                )
-                            }
+                        anime.genres.forEach { genre ->
+                            AssistChip(
+                                onClick = { },
+                                label = { Text(genre.russian) }
+                            )
                         }
                     }
                 }
@@ -229,115 +246,45 @@ private fun AnimeDetailsContent(anime: Anime) {
         }
         
         // Description
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Description",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    
-                    Text(
-                        text = "This is a placeholder description for ${anime.russian ?: anime.name}. " +
-                                "In a real app, this would come from the API and contain detailed information " +
-                                "about the anime's plot, characters, and themes.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
-                    )
-                }
-            }
-        }
-        
-        // Episodes list
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Episodes",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
-            }
-        }
-        
-        items(episodes) { episode ->
-            EpisodeItem(
-                episode = episode,
-                onClick = { /* TODO: Handle episode click */ }
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun EpisodeItem(
-    episode: Episode,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (episode.watched) 
-                MaterialTheme.colorScheme.primaryContainer 
-            else 
-                MaterialTheme.colorScheme.surface
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Card(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                Icons.Default.PlayArrow,
-                contentDescription = "Play",
-                tint = if (episode.watched) 
-                    MaterialTheme.colorScheme.onPrimaryContainer 
-                else 
-                    MaterialTheme.colorScheme.onSurface
-            )
-            
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = episode.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
+                    text = "Description",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
+                
+                val description = anime.description ?: "No description available for this anime."
+                val shortDescription = if (description.length > 200) {
+                    description.take(200) + "..."
+                } else {
+                    description
+                }
+                
                 Text(
-                    text = "Episode ${episode.number} • ${episode.airDate}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (episode.watched) 
-                        MaterialTheme.colorScheme.onPrimaryContainer 
-                    else 
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                    text = if (isDescriptionExpanded) description else shortDescription,
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
                 )
-            }
-            
-            if (episode.watched) {
-                Icon(
-                    Icons.Default.Star,
-                    contentDescription = "Play",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(16.dp)
-                )
+                
+                if (description.length > 200) {
+                    TextButton(
+                        onClick = { isDescriptionExpanded = !isDescriptionExpanded },
+                        modifier = Modifier.padding(0.dp),
+                        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = if (isDescriptionExpanded) "Скрыть" else "Показать полностью",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         }
     }

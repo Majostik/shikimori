@@ -1,23 +1,44 @@
 package com.shikimori.features.home.presentation
 
 import com.shikimori.designsystem.ShikimoriTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.shikimori.features.anime.presentation.AnimeScreen
 import com.shikimori.features.manga.presentation.MangaScreen
 import com.shikimori.features.discovery.presentation.DiscoveryScreen
 import com.shikimori.features.settings.presentation.SettingsScreen
 import com.shikimori.navigation.component.HomeComponent
-import com.shikimori.common.di.koinInject
 
 data class TabItem(
     val title: String,
@@ -26,10 +47,9 @@ data class TabItem(
 
 @Composable
 fun HomeScreen(
-    component: HomeComponent,
-    viewModel: HomeViewModel = koinInject()
+    component: HomeComponent
 ) {
-    val uiState by viewModel.uiState
+    val selectedTabIndex by component.selectedTabIndex.subscribeAsState()
     
     val tabs = listOf(
         TabItem("Anime", Icons.Default.PlayArrow),
@@ -53,8 +73,8 @@ fun HomeScreen(
                             ) 
                         },
                         label = { Text(tab.title) },
-                        selected = uiState.selectedTabIndex == index,
-                        onClick = { viewModel.selectTab(index) },
+                        selected = selectedTabIndex == index,
+                        onClick = { component.selectTab(index) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -73,7 +93,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
-            when (uiState.selectedTabIndex) {
+            when (selectedTabIndex) {
                 0 -> AnimeScreen(
                     onAnimeClick = component::onAnimeClicked
                 )

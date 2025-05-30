@@ -24,6 +24,7 @@ core-ktx = "1.13.1"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.2.1"
 espresso-core = "3.6.1"
+kermit = "2.0.4"
 
 # KMP specific
 kmp-nativecoroutines = "1.0.0-ALPHA-31"
@@ -86,6 +87,9 @@ koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = 
 # KMP Image Loading
 kamel-image = { group = "media.kamel", name = "kamel-image", version.ref = "kamel" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+
+# KMP Logging
+kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 
 # KMP ViewModel
 viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }

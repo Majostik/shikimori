@@ -18,5 +18,5 @@ val mangaModule = module {
     singleOf(::MangaRepositoryImpl) bind MangaRepository::class
     factoryOf(::GetMangasUseCase)
     factoryOf(::SearchMangasUseCase)
-    factoryOf(::MangaViewModel)
+    singleOf(::MangaViewModel)
 } 

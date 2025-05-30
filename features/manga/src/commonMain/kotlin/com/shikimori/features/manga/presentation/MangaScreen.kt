@@ -1,20 +1,50 @@
 package com.shikimori.features.manga.presentation
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shikimori.core.domain.model.Manga
+import com.shikimori.core.domain.model.fullPreview
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import com.shikimori.common.di.koinInject
@@ -28,6 +58,23 @@ fun MangaScreen(
     val uiState by viewModel.uiState
     var searchQuery by remember { mutableStateOf("") }
     var isSearchActive by remember { mutableStateOf(false) }
+    val gridState = rememberLazyGridState()
+    
+    // Restore scroll position
+    LaunchedEffect(Unit) {
+        if (viewModel.scrollPosition > 0) {
+            gridState.scrollToItem(viewModel.scrollPosition)
+        }
+    }
+    
+    // Save scroll position when scrolling
+    val firstVisibleItemIndex by remember {
+        derivedStateOf { gridState.firstVisibleItemIndex }
+    }
+    
+    LaunchedEffect(firstVisibleItemIndex) {
+        viewModel.updateScrollPosition(firstVisibleItemIndex)
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -113,15 +160,33 @@ fun MangaScreen(
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
+                            state = gridState,
                             contentPadding = PaddingValues(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(state.mangas) { manga ->
+                            itemsIndexed(state.mangas) { index, manga ->
+                                if (index >= state.mangas.size - 2 && state.canLoadMore && !state.isLoadingMore) {
+                                    viewModel.loadMoreMangas()
+                                }
+                                
                                 MangaItem(
                                     manga = manga,
                                     onClick = { onMangaClick(manga.id) }
                                 )
+                            }
+                            
+                            if (state.isLoadingMore) {
+                                items(1, span = { GridItemSpan(maxLineSpan) }) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
                             }
                         }
                     }
@@ -139,40 +204,83 @@ private fun MangaItem(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp)
     ) {
         Column {
-            KamelImage(
-                resource = asyncPainterResource(manga.image.preview),
-                contentDescription = manga.name,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
+                    .height(180.dp)
+            ) {
+                KamelImage(
+                    resource = asyncPainterResource(manga.image.fullPreview()),
+                    contentDescription = manga.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    onLoading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    },
+                    onFailure = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No Image",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                )
+            }
             
             Column(
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = manga.russian ?: manga.name,
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    minLines = 2
                 )
                 
-                Text(
-                    text = manga.genres.firstOrNull()?.russian ?: "",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                if (!manga.score.isNullOrBlank()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "★ ${manga.score}",
+                        text = manga.genres.firstOrNull()?.russian ?: "Манга",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
+                    
+                    if (!manga.score.isNullOrBlank()) {
+                        Text(
+                            text = "★ ${manga.score}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

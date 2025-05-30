@@ -53,6 +53,12 @@ data class Image(
     val x48: String
 )
 
+// Extension functions to get full URLs
+fun Image.fullOriginal(): String = if (original.startsWith("http")) original else "https://shikimori.one$original"
+fun Image.fullPreview(): String = if (preview.startsWith("http")) preview else "https://shikimori.one$preview"
+fun Image.fullX96(): String = if (x96.startsWith("http")) x96 else "https://shikimori.one$x96"
+fun Image.fullX48(): String = if (x48.startsWith("http")) x48 else "https://shikimori.one$x48"
+
 @Serializable
 data class RateScore(
     val name: Int,
@@ -77,7 +83,7 @@ data class Genre(
 data class Studio(
     val id: Int,
     val name: String,
-    val filteredName: String,
+    val filteredName: String? = null,
     val real: Boolean,
     val image: String? = null
 )
@@ -86,8 +92,8 @@ data class Studio(
 data class Video(
     val id: Int,
     val url: String,
-    val imageUrl: String,
-    val playerUrl: String,
+    val imageUrl: String? = null,
+    val playerUrl: String? = null,
     val name: String? = null,
     val kind: String,
     val hosting: String
