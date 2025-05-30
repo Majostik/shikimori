@@ -50,82 +50,161 @@ fun DiscoveryScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        TopAppBar(
-            title = { Text("Discovery") },
-            actions = {
-                IconButton(onClick = { /* TODO: Search */ }) {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                titleContentColor = MaterialTheme.colorScheme.onBackground,
-                actionIconContentColor = MaterialTheme.colorScheme.onBackground
-            )
-        )
+        DiscoveryTopBar()
         
-        Box(modifier = Modifier.fillMaxSize()) {
-            when (val state = uiState) {
-                is DiscoveryUiState.Loading -> {
-                    CircularProgressIndicator(
+        DiscoveryContent(
+            uiState = uiState,
+            onAnimeClick = onAnimeClick,
+            onRetry = { viewModel.retry() }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DiscoveryTopBar() {
+    TopAppBar(
+        title = { Text("Discovery") },
+        actions = {
+            IconButton(onClick = { /* TODO: Search */ }) {
+                Icon(Icons.Default.Search, contentDescription = "Search")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            actionIconContentColor = MaterialTheme.colorScheme.onBackground
+        )
+    )
+}
+
+@Composable
+private fun DiscoveryContent(
+    uiState: DiscoveryUiState,
+    onAnimeClick: (Int) -> Unit,
+    onRetry: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (uiState) {
+            is DiscoveryUiState.Loading -> {
+                LoadingState(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            
+            is DiscoveryUiState.Error -> {
+                ErrorState(
+                    message = uiState.message,
+                    onRetry = onRetry,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            
+            is DiscoveryUiState.Success -> {
+                if (uiState.trendingAnimes.isEmpty()) {
+                    EmptyState(
+                        message = "No trending anime available",
                         modifier = Modifier.align(Alignment.Center)
                     )
-                }
-                
-                is DiscoveryUiState.Error -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.retry() }) {
-                            Text("Retry")
-                        }
-                    }
-                }
-                
-                is DiscoveryUiState.Success -> {
-                    if (state.trendingAnimes.isEmpty()) {
-                        Text(
-                            text = "No trending anime available",
-                            modifier = Modifier.align(Alignment.Center),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Text(
-                                text = "Trending Now",
-                                style = MaterialTheme.typography.headlineSmall,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
-                            )
-                            
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                itemsIndexed(state.trendingAnimes) { index, anime ->
-                                    DiscoveryItem(
-                                        anime = anime,
-                                        onClick = { onAnimeClick(anime.id) },
-                                        modifier = Modifier.padding(
-                                            start = if (index == 0) 16.dp else 0.dp,
-                                            end = if (index == state.trendingAnimes.lastIndex) 16.dp else 0.dp
-                                        )
-                                    )
-                                }
-                            }
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-                    }
+                } else {
+                    TrendingSection(
+                        animes = uiState.trendingAnimes,
+                        onAnimeClick = onAnimeClick
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LoadingState(
+    modifier: Modifier = Modifier
+) {
+    CircularProgressIndicator(modifier = modifier)
+}
+
+@Composable
+private fun ErrorState(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onRetry) {
+            Text("Retry")
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(
+    message: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = message,
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyLarge
+    )
+}
+
+@Composable
+private fun TrendingSection(
+    animes: List<Anime>,
+    onAnimeClick: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        SectionHeader(text = "Trending Now")
+        
+        TrendingList(
+            animes = animes,
+            onAnimeClick = onAnimeClick
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    text: String
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.headlineSmall,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+    )
+}
+
+@Composable
+private fun TrendingList(
+    animes: List<Anime>,
+    onAnimeClick: (Int) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        itemsIndexed(animes) { index, anime ->
+            DiscoveryItem(
+                anime = anime,
+                onClick = { onAnimeClick(anime.id) },
+                modifier = Modifier.padding(
+                    start = if (index == 0) 16.dp else 0.dp,
+                    end = if (index == animes.lastIndex) 16.dp else 0.dp
+                )
+            )
         }
     }
 }
@@ -144,44 +223,64 @@ private fun DiscoveryItem(
             .height(320.dp)
     ) {
         Column {
-            KamelImage(
-                resource = asyncPainterResource(anime.image.preview),
-                contentDescription = anime.name,
+            DiscoveryItemImage(
+                anime = anime,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp),
-                contentScale = ContentScale.Crop
+                    .height(220.dp)
             )
             
-            Column(
+            DiscoveryItemInfo(
+                anime = anime,
                 modifier = Modifier
                     .padding(8.dp)
                     .height(92.dp)
-            ) {
-                Text(
-                    text = anime.russian ?: anime.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                Text(
-                    text = anime.genres.firstOrNull()?.russian ?: "",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
-                if (!anime.score.isNullOrBlank()) {
-                    Text(
-                        text = "★ ${anime.score}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DiscoveryItemImage(
+    anime: Anime,
+    modifier: Modifier = Modifier
+) {
+    KamelImage(
+        resource = asyncPainterResource(anime.image.preview),
+        contentDescription = anime.name,
+        modifier = modifier,
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+private fun DiscoveryItemInfo(
+    anime: Anime,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = anime.russian ?: anime.name,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        
+        Text(
+            text = anime.genres.firstOrNull()?.russian ?: "",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        
+        if (!anime.score.isNullOrBlank()) {
+            Text(
+                text = "★ ${anime.score}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 } 

@@ -48,106 +48,164 @@ fun SettingsScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        TopAppBar(
-            title = { Text("Settings") },
-            navigationIcon = {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                titleContentColor = MaterialTheme.colorScheme.onBackground,
-                navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+        SettingsTopBar()
+        
+        SettingsContent(
+            currentTheme = currentTheme,
+            onThemeChanged = onThemeChanged
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsTopBar() {
+    TopAppBar(
+        title = { Text("Settings") },
+        navigationIcon = {
+            Icon(
+                Icons.Default.Settings,
+                contentDescription = "Settings",
+                modifier = Modifier.padding(start = 16.dp)
             )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+        )
+    )
+}
+
+@Composable
+private fun SettingsContent(
+    currentTheme: ThemeMode,
+    onThemeChanged: (ThemeMode) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        AppearanceSection(
+            currentTheme = currentTheme,
+            onThemeChanged = onThemeChanged
         )
         
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        AboutSection()
+    }
+}
+
+@Composable
+private fun AppearanceSection(
+    currentTheme: ThemeMode,
+    onThemeChanged: (ThemeMode) -> Unit
+) {
+    SectionHeader(text = "Appearance")
+    
+    SettingsCard {
+        ThemeSelector(
+            currentTheme = currentTheme,
+            onThemeChanged = onThemeChanged
+        )
+    }
+}
+
+@Composable
+private fun AboutSection() {
+    SettingsCard {
+        AboutInfo()
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    text: String
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.headlineSmall,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
+}
+
+@Composable
+private fun SettingsCard(
+    content: @Composable () -> Unit
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Appearance",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .selectableGroup()
-                ) {
-                    Text(
-                        text = "Theme",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    
-                    ThemeOption(
-                        text = "Light",
-                        icon = Icons.Default.Star,
-                        selected = currentTheme == ThemeMode.LIGHT,
-                        onClick = { onThemeChanged(ThemeMode.LIGHT) }
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    ThemeOption(
-                        text = "Dark",
-                        icon = Icons.Default.Add,
-                        selected = currentTheme == ThemeMode.DARK,
-                        onClick = { onThemeChanged(ThemeMode.DARK) }
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    ThemeOption(
-                        text = "System default",
-                        icon = Icons.Default.Settings,
-                        selected = currentTheme == ThemeMode.SYSTEM,
-                        onClick = { onThemeChanged(ThemeMode.SYSTEM) }
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "About",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    
-                    Text(
-                        text = "Shikimori App",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    
-                    Text(
-                        text = "Version 1.0.0",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            content()
         }
     }
+}
+
+@Composable
+private fun ThemeSelector(
+    currentTheme: ThemeMode,
+    onThemeChanged: (ThemeMode) -> Unit
+) {
+    Column(
+        modifier = Modifier.selectableGroup()
+    ) {
+        Text(
+            text = "Theme",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        ThemeOption(
+            text = "Light",
+            icon = Icons.Default.Star,
+            selected = currentTheme == ThemeMode.LIGHT,
+            onClick = { onThemeChanged(ThemeMode.LIGHT) }
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        ThemeOption(
+            text = "Dark",
+            icon = Icons.Default.Add,
+            selected = currentTheme == ThemeMode.DARK,
+            onClick = { onThemeChanged(ThemeMode.DARK) }
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        ThemeOption(
+            text = "System default",
+            icon = Icons.Default.Settings,
+            selected = currentTheme == ThemeMode.SYSTEM,
+            onClick = { onThemeChanged(ThemeMode.SYSTEM) }
+        )
+    }
+}
+
+@Composable
+private fun AboutInfo() {
+    Text(
+        text = "About",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+    
+    Text(
+        text = "Shikimori App",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(bottom = 4.dp)
+    )
+    
+    Text(
+        text = "Version 1.0.0",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
 
 @Composable

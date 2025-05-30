@@ -10,6 +10,7 @@ kotlin {
             implementation(project(":common"))
             implementation(project(":navigation:public"))
             implementation(project(":network"))
+            implementation(project(":design-system"))
             
             // Compose
             implementation(compose.runtime)

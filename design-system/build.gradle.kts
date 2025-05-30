@@ -15,6 +15,9 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             
+            // Image loading
+            implementation(libs.kamel.image)
+            
             // ViewModel
             
             // Coroutines
@@ -33,5 +36,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.shikimori.features.home"
+    namespace = "com.shikimori.designsystem"
 } 

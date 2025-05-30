@@ -54,6 +54,14 @@ import io.kamel.image.asyncPainterResource
 import com.shikimori.common.di.koinInject
 import com.shikimori.navigation.component.MangaDetailsComponent
 
+// Design System Components
+import com.shikimori.designsystem.components.LoadingState
+import com.shikimori.designsystem.components.ErrorState
+import com.shikimori.designsystem.components.PosterImage
+import com.shikimori.designsystem.components.RatingDisplay
+import com.shikimori.designsystem.components.SectionTitle
+import com.shikimori.designsystem.components.SectionCard
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MangaDetailsScreen(
@@ -96,29 +104,17 @@ fun MangaDetailsScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             when (val state = uiState) {
                 is MangaDetailsUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                    LoadingState(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
                 
                 is MangaDetailsUiState.Error -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadManga(component.mangaId) }) {
-                            Text("Retry")
-                        }
-                    }
+                    ErrorState(
+                        message = state.message,
+                        onRetry = { viewModel.loadManga(component.mangaId) },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
                 
                 is MangaDetailsUiState.Success -> {
@@ -139,7 +135,8 @@ private fun MangaDetailsContent(manga: Manga) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(16.dp),
+            .padding(16.dp)
+            .padding(bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header with poster and info
@@ -148,14 +145,12 @@ private fun MangaDetailsContent(manga: Manga) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Poster
-            KamelImage(
-                resource = asyncPainterResource(manga.image.fullPreview()),
+            PosterImage(
+                imageUrl = manga.image.fullPreview(),
                 contentDescription = manga.name,
                 modifier = Modifier
                     .width(140.dp)
                     .height(200.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
             )
             
             // Info
@@ -179,22 +174,9 @@ private fun MangaDetailsContent(manga: Manga) {
                 
                 // Rating
                 if (!manga.score.isNullOrBlank()) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = "Rating",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = manga.score ?: "",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    RatingDisplay(
+                        rating = manga.score ?: ""
+                    )
                 }
                 
                 // Chapters info
@@ -217,74 +199,52 @@ private fun MangaDetailsContent(manga: Manga) {
         
         // Genres
         if (manga.genres.isNotEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+            SectionCard {
+                SectionTitle(text = "Genres")
+                
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = "Genres",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        manga.genres.forEach { genre ->
-                            AssistChip(
-                                onClick = { },
-                                label = { Text(genre.russian) }
-                            )
-                        }
+                    manga.genres.forEach { genre ->
+                        AssistChip(
+                            onClick = { /* TODO */ },
+                            label = { Text(genre.russian) }
+                        )
                     }
                 }
             }
         }
         
         // Description
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = "Description",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                val description = manga.description ?: "No description available for this manga."
-                val shortDescription = if (description.length > 200) {
-                    description.take(200) + "..."
-                } else {
-                    description
-                }
-                
-                Text(
-                    text = if (isDescriptionExpanded) description else shortDescription,
-                    style = MaterialTheme.typography.bodyMedium,
-                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
-                )
-                
-                if (description.length > 200) {
-                    TextButton(
-                        onClick = { isDescriptionExpanded = !isDescriptionExpanded },
-                        modifier = Modifier.padding(0.dp),
-                        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = if (isDescriptionExpanded) "Скрыть" else "Показать полностью",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+        SectionCard {
+            SectionTitle(text = "Description")
+            
+            val description = manga.description ?: "No description available for this manga."
+            val shortDescription = if (description.length > 200) {
+                description.take(200) + "..."
+            } else {
+                description
+            }
+            
+            Text(
+                text = if (isDescriptionExpanded) description else shortDescription,
+                style = MaterialTheme.typography.bodyMedium,
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            )
+            
+            if (description.length > 200) {
+                TextButton(
+                    onClick = { isDescriptionExpanded = !isDescriptionExpanded },
+                    modifier = Modifier.padding(0.dp),
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = if (isDescriptionExpanded) "Скрыть" else "Показать полностью",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
